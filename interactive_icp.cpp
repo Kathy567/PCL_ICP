@@ -12,6 +12,7 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 
 bool next_iteration = false;
 
+// This function takes the reference of a 4x4 matrix and prints the rigid transformation
 void
 print4x4Matrix (const Eigen::Matrix4d & matrix)
 {
@@ -23,6 +24,7 @@ print4x4Matrix (const Eigen::Matrix4d & matrix)
   printf ("t = < %6.3f, %6.3f, %6.3f >\n\n", matrix (0, 3), matrix (1, 3), matrix (2, 3));
 }
 
+// Callback for the viewer. If “space” is hit; set the bool to true.
 void
 keyboardEventOccurred (const pcl::visualization::KeyboardEvent& event,
                        void* nothing)
@@ -35,7 +37,7 @@ int
 main (int argc,
       char* argv[])
 {
-  // The point clouds we will be using
+  // The 3 point clouds we will be using
   PointCloudT::Ptr cloud_in (new PointCloudT);  // Original point cloud
   PointCloudT::Ptr cloud_tr (new PointCloudT);  // Transformed point cloud
   PointCloudT::Ptr cloud_icp (new PointCloudT);  // ICP output point cloud
@@ -89,15 +91,15 @@ main (int argc,
 
   // Executing the transformation
   pcl::transformPointCloud (*cloud_in, *cloud_icp, transformation_matrix);
-  *cloud_tr = *cloud_icp;  // We backup cloud_icp into cloud_tr for later use
+  *cloud_tr = *cloud_icp;  // We backup cloud_icp into cloud_tr for later display use
 
   // The Iterative Closest Point algorithm
   time.tic ();
-  pcl::IterativeClosestPoint<PointT, PointT> icp;
+  pcl::IterativeClosestPoint<PointT, PointT> icp; // Creation of the ICP object
   icp.setMaximumIterations (iterations);
   icp.setInputSource (cloud_icp);
   icp.setInputTarget (cloud_in);
-  icp.align (*cloud_icp);
+  icp.align (*cloud_icp); // Transform the point cloud into cloud_icp
   icp.setMaximumIterations (1);  // We set this variable to 1 for the next time we will call .align () function
   std::cout << "Applied " << iterations << " ICP iteration(s) in " << time.toc () << " ms" << std::endl;
 
@@ -105,7 +107,7 @@ main (int argc,
   {
     std::cout << "\nICP has converged, score is " << icp.getFitnessScore () << std::endl;
     std::cout << "\nICP transformation " << iterations << " : cloud_icp -> cloud_in" << std::endl;
-    transformation_matrix = icp.getFinalTransformation ().cast<double>();
+    transformation_matrix = icp.getFinalTransformation ().cast<double>(); // tore the transformation matrix in a 4x4 matrix
     print4x4Matrix (transformation_matrix);
   }
   else
@@ -126,7 +128,7 @@ main (int argc,
   float bckgr_gray_level = 0.0;  // Black
   float txt_gray_lvl = 1.0 - bckgr_gray_level;
 
-  // Original point cloud is white
+  // Original point cloud is white as "txt_gray_lvl"
   pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_in_color_h (cloud_in, (int) 255 * txt_gray_lvl, (int) 255 * txt_gray_lvl,
                                                                              (int) 255 * txt_gray_lvl);
   viewer.addPointCloud (cloud_in, cloud_in_color_h, "cloud_in_v1", v1);
@@ -144,7 +146,7 @@ main (int argc,
   viewer.addText ("White: Original point cloud\nGreen: Matrix transformed point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_1", v1);
   viewer.addText ("White: Original point cloud\nRed: ICP aligned point cloud", 10, 15, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "icp_info_2", v2);
 
-  std::stringstream ss;
+  std::stringstream ss; // string stream ss is needed to transform the integer iterations into a string
   ss << iterations;
   std::string iterations_cnt = "ICP iterations = " + ss.str ();
   viewer.addText (iterations_cnt, 10, 60, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "iterations_cnt", v2);
@@ -158,12 +160,12 @@ main (int argc,
   viewer.setSize (1280, 1024);  // Visualiser window size
 
   // Register keyboard callback :
-  viewer.registerKeyboardCallback (&keyboardEventOccurred, (void*) NULL);
+  viewer.registerKeyboardCallback (&keyboardEventOccurred, (void*) NULL); // allows us to call a function whenever the users pressed a keyboard key when viewer windows is on top
 
   // Display the visualiser
   while (!viewer.wasStopped ())
   {
-    viewer.spinOnce ();
+    viewer.spinOnce (); // if no key is pressed
 
     // The user pressed "space" :
     if (next_iteration)
@@ -179,6 +181,7 @@ main (int argc,
         printf ("\nICP has converged, score is %+.0e\n", icp.getFitnessScore ());
         std::cout << "\nICP transformation " << ++iterations << " : cloud_icp -> cloud_in" << std::endl;
         transformation_matrix *= icp.getFinalTransformation ().cast<double>();  // WARNING /!\ This is not accurate! For "educational" purpose only!
+        // returns the rigid matrix transformation done during the iterations (here: 1 iteration)
         print4x4Matrix (transformation_matrix);  // Print the transformation between original pose and current pose
 
         ss.str ("");
