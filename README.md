@@ -1,13 +1,12 @@
-Iterative Closest Point
+Iterative Closest Point/n
 
-PCL 库中提供了以下 ICP 的接口及其变种：
+PCL 库中提供了以下 ICP 的接口及其变种：/n
 
 点到点：pcl::IterativeClosestPoint< PointSource, PointTarget, Scalar >
 点到面：pcl::IterativeClosestPointWithNormals< PointSource, PointTarget, Scalar >
 面到面：pcl::GeneralizedIterativeClosestPoint< PointSource, PointTarget >
 ……
-其中，IterativeClosestPoint 模板类是 ICP 算法的一个基本实现，其优化求解方法基于 Singular Value Decomposition (SVD)，算法迭代结束条件包括：
-
+其中，IterativeClosestPoint 模板类是 ICP 算法的一个基本实现，其优化求解方法基于 Singular Value Decomposition (SVD)，算法迭代结束条件包括：/n
 最大迭代次数：Number of iterations has reached the maximum user imposed number of iterations (via setMaximumIterations)
 两次变换矩阵之间的差值：The epsilon (difference) between the previous transformation and the current estimated transformation is smaller than an user imposed value (via setTransformationEpsilon)
 均方误差：The sum of Euclidean squared errors is smaller than a user defined threshold (via setEuclideanFitnessEpsilon)
